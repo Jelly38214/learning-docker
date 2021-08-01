@@ -1,0 +1,62 @@
+# 一个项目可以由多个服务（容器）关联而成，Compose 面向项目进行管理
+version: "3"
+
+networks:          
+  cartWebNet:
+
+services: 
+  cartWebRedis:
+    image: redis:latest
+    restart: always
+    ports:
+       - "5379:6379"
+    command: redis-server
+    networks: 
+      - cartWebNet
+
+  cartWebApp:
+    # 指定镜像名称或者ID.如果不存在则会去拉取
+    image: node:14.15.3-slim 
+    command: npm run server-dev
+    restart: always
+    # build: 
+    #   context: ./dir # context指令指定Dockerfile所在文件夹路径
+    #   dockerfile: ./Dockerfile
+    #   args: # 指定构建镜像时的变量
+    #     build: 1
+    # dockerfile: devDockerfile # dockerfile指令指定Dockerfile文件名
+    ports: 
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:443:443"
+    ports:
+      - "3000:3000"
+      - "443:443"
+    working_dir: /cart
+    # 数据卷所挂载路径设置.支持单个路径, host:container路径格式并设置访问模式(ro表示read only)
+    volumes: 
+      - /Users/jelly/iHerb/cart.web:/cart
+    # arg指令指定构建镜像时的变量
+    # 从文件中获取环境变量,可以是单独的文件路径或列表
+    # 环境变量文件中每一行必须符合格式: key=value, 支持#开头的注释行
+    env_file: .env
+    # cap_add, cap_drop指定容器的内核能力分配
+    cap_add: 
+      - ALL
+    # command: echo "hello world" # 覆盖容器启动后默认执行的命令
+    # 默认使用项目名称_服务名称_序号
+    # 指定容器名称后,该服务将无法进行扩展,因为Docker不允许多个容器具有相同的名称
+    container_name: docker-web-container 
+    # 解决容器的依赖,启动先后的问题,但它不会等到依赖完全启动再启动,只有依赖启动了它就启动
+    depends_on: 
+      - cartWebRedis
+    environment:
+      redis_server_addr: cartWebRedis:6379
+    dns: 
+      - 8.8.8.8
+      - 114.114.114.114
+    logging: 
+      driver: "json-file"
+    # 使用host:container的格式
+    networks: 
+      - cartWebNet
+
