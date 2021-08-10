@@ -11,6 +11,10 @@
 ### Docker镜像发布
   1. 先登录:docker login
 
+### 数据卷volume
+
+
 Reference:
   - [Docker安装和国内镜像配置](https://get.daocloud.io/#install-docker)
   - [Vagrant下载](https://www.vagrantup.com/downloads.html)
+  - [volume的覆盖行为](https://segmentfault.com/a/1190000015684472)
